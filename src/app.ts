@@ -22,9 +22,19 @@ import { userRoutes } from "./modules/user/user.route";
 
 const app: Application = express();
 
+const allowedOrigins = (config.cors_origins || "http://localhost:3000")
+  .split(",")
+  .map((origin) => origin.trim());
+
 app.use(
   cors({
-    origin: config.app_url,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   }),
 );
