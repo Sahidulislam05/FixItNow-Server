@@ -26,10 +26,20 @@ const allowedOrigins = (config.cors_origins || "http://localhost:3000")
   .split(",")
   .map((origin) => origin.trim());
 
+const sslCommerzOrigins = [
+  "https://sandbox.sslcommerz.com",
+  "https://securepay.sslcommerz.com",
+  "https://sslcommerz.com",
+];
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        sslCommerzOrigins.includes(origin) ||
+        origin.endsWith(".sslcommerz.com")
+      ) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
@@ -44,7 +54,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("FixItNow API is running 🔧");
+  res.send("FixItNow API is running!");
 });
 
 app.use("/api/auth", authRoutes);

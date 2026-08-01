@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
 import { Role } from "../../../generated/prisma/enums";
+import config from "../../config";
 import { AppError } from "../../utils/AppError";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
@@ -29,32 +30,39 @@ const createPayment = catchAsync(
 const confirmPayment = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { tranId, status } = req.query;
-
     const payload = req.body;
 
+    // ফ্রন্টএন্ডের Base URL
+    const frontendUrl =
+      config.frontend_url || "https://fix-it-now-bd.vercel.app";
+
     if (!tranId || !status) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        "tranId and status are required in query",
+      return res.redirect(
+        `${frontendUrl}/payment/fail?message=Missing+transaction+details`,
       );
     }
 
-    const result = await paymentService.confirmPaymentInDB(
-      tranId as string,
-      status as string,
-      payload,
-    );
+    try {
+      const result = await paymentService.confirmPaymentInDB(
+        tranId as string,
+        status as string,
+        payload,
+      );
 
-    // কোনো frontend নেই বলে JSON রেসপন্স রাখা হলো (থাকলে সাধারণত এখানে frontend URL এ redirect করা হতো)
-    sendResponse(res, {
-      success: result.status === "PAID",
-      statusCode: httpStatus.OK,
-      message:
-        result.status === "PAID"
-          ? "Payment completed successfully"
-          : `Payment ${String(result.status).toLowerCase()}`,
-      data: result,
-    });
+      // 🔄 পেমেন্ট স্ট্যাটাস অনুযায়ী ফ্রন্টএন্ড পেজে রিডাইরেক্ট করা হচ্ছে
+      if (result.status === "PAID") {
+        return res.redirect(
+          `${frontendUrl}/payment/success?tranId=${tranId}&bookingId=${result.bookingId || ""}`,
+        );
+      } else if (result.status === "CANCELLED") {
+        return res.redirect(`${frontendUrl}/payment/cancel?tranId=${tranId}`);
+      } else {
+        return res.redirect(`${frontendUrl}/payment/fail?tranId=${tranId}`);
+      }
+    } catch (error) {
+      // কোনো এরর হলে ফেল পেজে নিয়ে যাবে
+      return res.redirect(`${frontendUrl}/payment/fail?tranId=${tranId || ""}`);
+    }
   },
 );
 
