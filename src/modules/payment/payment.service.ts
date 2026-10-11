@@ -42,12 +42,16 @@ const initiatePaymentIntoDB = async (bookingId: string, customerId: string) => {
 
   const tranId = `FIXITNOW_${Date.now()}_${booking.id.slice(0, 8)}`;
 
+  const backendUrl = (
+    config.app_url || "https://fix-it-now-bd.vercel.app"
+  ).replace(/\/$/, "");
+
   const sslResponse = await sslCommerzService.initSession({
     total_amount: Number(booking.totalPrice),
     tran_id: tranId,
-    success_url: `${config.app_url}/api/payments/confirm?tranId=${tranId}&status=success`,
-    fail_url: `${config.app_url}/api/payments/confirm?tranId=${tranId}&status=fail`,
-    cancel_url: `${config.app_url}/api/payments/confirm?tranId=${tranId}&status=cancel`,
+    success_url: `${backendUrl}/api/payments/confirm?tranId=${tranId}&status=success`,
+    fail_url: `${backendUrl}/api/payments/confirm?tranId=${tranId}&status=fail`,
+    cancel_url: `${backendUrl}/api/payments/confirm?tranId=${tranId}&status=cancel`,
     cus_name: customer.name,
     cus_email: customer.email,
     cus_phone: customer.phone || undefined,

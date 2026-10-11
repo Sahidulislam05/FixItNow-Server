@@ -33,8 +33,9 @@ const confirmPayment = catchAsync(
     const payload = req.body;
 
     // ফ্রন্টএন্ডের Base URL
-    const frontendUrl =
-      config.frontend_url || "https://fix-it-now-bd.vercel.app";
+    const frontendUrl = (
+      config.frontend_url || "https://fix-it-now-delta.vercel.app"
+    ).replace(/\/$/, "");
 
     if (!tranId || !status) {
       return res.redirect(

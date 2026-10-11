@@ -22,9 +22,18 @@ import { userRoutes } from "./modules/user/user.route";
 
 const app: Application = express();
 
-const allowedOrigins = (config.cors_origins || "http://localhost:3000")
-  .split(",")
-  .map((origin) => origin.trim());
+const defaultOrigins = [
+  "http://localhost:3000",
+  "https://fix-it-now-delta.vercel.app",
+];
+
+const envOrigins = [config.cors_origins, config.frontend_url]
+  .filter(Boolean)
+  .flatMap((item) => (item as string).split(","))
+  .map((origin) => origin.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+
+const allowedOrigins = Array.from(new Set([...defaultOrigins, ...envOrigins]));
 
 const sslCommerzOrigins = [
   "https://sandbox.sslcommerz.com",
@@ -34,11 +43,13 @@ const sslCommerzOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
+      const normalizedOrigin = origin?.replace(/\/$/, "");
       if (
-        !origin ||
-        allowedOrigins.includes(origin) ||
-        sslCommerzOrigins.includes(origin) ||
-        origin.endsWith(".sslcommerz.com")
+        !normalizedOrigin ||
+        allowedOrigins.includes(normalizedOrigin) ||
+        sslCommerzOrigins.includes(normalizedOrigin) ||
+        normalizedOrigin.endsWith(".sslcommerz.com") ||
+        normalizedOrigin.endsWith(".vercel.app")
       ) {
         callback(null, true);
       } else {
@@ -46,6 +57,8 @@ app.use(
       }
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
   }),
 );
 

@@ -1,8 +1,7 @@
 {
-  "buildCommand": "npm run build",
-  "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "api/index.js": {
+    "src/app.ts": {
       "maxDuration": 30,
       "includeFiles": "generated/**"
     }
