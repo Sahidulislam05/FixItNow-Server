@@ -37,10 +37,12 @@ const getAllServicesFromDB = async (query: IServiceQuery) => {
   const limit = query.limit ? Number(query.limit) : 10;
   const page = query.page ? Number(query.page) : 1;
   const skip = (page - 1) * limit;
-  const sortBy = query.sortBy ? query.sortBy : "createdAt";
-  const sortOrder = query.sortOrder ? query.sortOrder : "desc";
+  const SORTABLE_FIELDS = ["createdAt", "price", "title"];
+  const sortBy = SORTABLE_FIELDS.includes(query.sortBy as string)
+    ? (query.sortBy as string)
+    : "createdAt";
+  const sortOrder: "asc" | "desc" = query.sortOrder === "asc" ? "asc" : "desc";
 
-  // পাবলিক লিস্টিং এ শুধু isActive সার্ভিস দেখানো হয়
   const andConditions: ServiceWhereInput[] = [{ isActive: true }];
 
   if (query.searchTerm) {

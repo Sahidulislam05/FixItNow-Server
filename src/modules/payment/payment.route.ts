@@ -14,7 +14,6 @@ router.post(
     paymentController.createPayment
 );
 
-// SSLCommerz সার্ভার নিজে এই route এ কল করে — তাই auth middleware নেই এখানে
 router.post("/confirm", paymentController.confirmPayment);
 
 router.get(

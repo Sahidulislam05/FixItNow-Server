@@ -88,8 +88,43 @@ const updateMyProfileInDB = async (
   return updatedUser;
 };
 
+/** Public demo accounts share one password, so nobody may change it. */
+const DEMO_EMAILS = new Set(
+  (process.env.DEMO_LOCKED_EMAILS || "customer@fixitnow.com,technician@fixitnow.com,admin@fixitnow.com")
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean),
+);
+
+const changePasswordInDB = async (
+  userId: string,
+  payload: { currentPassword: string; newPassword: string },
+) => {
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
+
+  if (DEMO_EMAILS.has(user.email.toLowerCase())) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "Demo account passwords can't be changed. Create your own account to try this.",
+    );
+  }
+
+  const matches = await bcrypt.compare(payload.currentPassword, user.password);
+  if (!matches) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Current password is incorrect");
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      password: await bcrypt.hash(payload.newPassword, Number(config.bcrypt_salt_rounds)),
+    },
+  });
+};
+
 export const userService = {
   registerUserIntoDB,
   getMyProfileFromDB,
   updateMyProfileInDB,
+  changePasswordInDB,
 };

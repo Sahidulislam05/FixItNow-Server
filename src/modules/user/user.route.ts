@@ -26,4 +26,11 @@ router.put(
   userController.updateMyProfile,
 );
 
+router.patch(
+  "/me/password",
+  auth(Role.CUSTOMER, Role.TECHNICIAN, Role.ADMIN),
+  validateRequest(userValidation.changePasswordValidationSchema),
+  userController.changePassword,
+);
+
 export const userRoutes = router;

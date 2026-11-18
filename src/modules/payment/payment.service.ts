@@ -33,8 +33,6 @@ const initiatePaymentIntoDB = async (bookingId: string, customerId: string) => {
     where: { id: customerId },
   });
 
-  // আগের কোনো PENDING payment attempt থাকলে সেটাকে বাতিল করে দেওয়া হচ্ছে,
-  // যাতে একই বুকিং এর জন্য একাধিক PENDING রেকর্ড জমে না থাকে
   await prisma.payment.updateMany({
     where: { bookingId, status: PaymentStatus.PENDING },
     data: { status: PaymentStatus.CANCELLED },

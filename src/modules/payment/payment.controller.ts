@@ -32,7 +32,6 @@ const confirmPayment = catchAsync(
     const { tranId, status } = req.query;
     const payload = req.body;
 
-    // ফ্রন্টএন্ডের Base URL
     const frontendUrl = (
       config.frontend_url || "https://fix-it-now-delta.vercel.app"
     ).replace(/\/$/, "");
@@ -50,7 +49,6 @@ const confirmPayment = catchAsync(
         payload,
       );
 
-      // 🔄 পেমেন্ট স্ট্যাটাস অনুযায়ী ফ্রন্টএন্ড পেজে রিডাইরেক্ট করা হচ্ছে
       if (result.status === "PAID") {
         return res.redirect(
           `${frontendUrl}/payment/success?tranId=${tranId}&bookingId=${result.bookingId || ""}`,
@@ -61,7 +59,6 @@ const confirmPayment = catchAsync(
         return res.redirect(`${frontendUrl}/payment/fail?tranId=${tranId}`);
       }
     } catch (error) {
-      // কোনো এরর হলে ফেল পেজে নিয়ে যাবে
       return res.redirect(`${frontendUrl}/payment/fail?tranId=${tranId || ""}`);
     }
   },

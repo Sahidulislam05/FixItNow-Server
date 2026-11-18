@@ -11,6 +11,7 @@ import {
   technicianBookingRoutes,
 } from "./modules/booking/booking.route";
 import { categoryRoutes } from "./modules/category/category.route";
+import { contactRoutes } from "./modules/contact/contact.route";
 import { paymentRoutes } from "./modules/payment/payment.route";
 import { reviewRoutes } from "./modules/review/review.route";
 import { serviceRoutes } from "./modules/service/service.route";
@@ -81,6 +82,7 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/contact", contactRoutes);
 
 app.use(notFound);
 

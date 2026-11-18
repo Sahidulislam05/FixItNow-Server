@@ -67,6 +67,36 @@ const createReviewIntoDB = async (
   return result;
 };
 
+/** Latest written reviews for the public home page. Only exposes first names. */
+const getRecentReviewsFromDB = async (limit: number) => {
+  const reviews = await prisma.review.findMany({
+    where: { comment: { not: null } },
+    orderBy: { createdAt: "desc" },
+    take: Math.min(Math.max(limit, 1), 12),
+    select: {
+      id: true,
+      rating: true,
+      comment: true,
+      createdAt: true,
+      customer: { select: { name: true } },
+      technician: { select: { id: true, name: true } },
+      booking: {
+        select: {
+          service: {
+            select: { title: true, category: { select: { name: true } } },
+          },
+        },
+      },
+    },
+  });
+
+  return reviews.map(({ customer, ...review }) => ({
+    ...review,
+    customerName: customer.name.split(" ")[0],
+  }));
+};
+
 export const reviewService = {
   createReviewIntoDB,
+  getRecentReviewsFromDB,
 };

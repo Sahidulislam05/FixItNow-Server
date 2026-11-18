@@ -73,8 +73,15 @@ const getAllTechniciansFromDB = async (query: ITechnicianQuery) => {
   const limit = query.limit ? Number(query.limit) : 10;
   const page = query.page ? Number(query.page) : 1;
   const skip = (page - 1) * limit;
-  const sortBy = query.sortBy ? query.sortBy : "createdAt";
-  const sortOrder = query.sortOrder ? query.sortOrder : "desc";
+  const sortOrder: "asc" | "desc" = query.sortOrder === "asc" ? "asc" : "desc";
+
+  // Only known fields reach Prisma; anything else falls back to newest first.
+  const orderBy =
+    query.sortBy === "avgRating" || query.sortBy === "experienceYears"
+      ? { technicianProfile: { [query.sortBy]: sortOrder } }
+      : query.sortBy === "name"
+        ? { name: sortOrder }
+        : { createdAt: sortOrder };
 
   const andConditions: UserWhereInput[] = [{ role: Role.TECHNICIAN }];
 
@@ -110,9 +117,7 @@ const getAllTechniciansFromDB = async (query: ITechnicianQuery) => {
     take: limit,
     skip: skip,
 
-    orderBy: {
-      [sortBy]: sortOrder,
-    },
+    orderBy,
 
     omit: {
       password: true,

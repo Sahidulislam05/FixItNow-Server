@@ -21,6 +21,19 @@ const createReview = catchAsync(
   },
 );
 
+const getRecentReviews = catchAsync(async (req: Request, res: Response) => {
+  const limit = Number(req.query.limit) || 6;
+  const reviews = await reviewService.getRecentReviewsFromDB(limit);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Recent reviews retrieved successfully",
+    data: { reviews },
+  });
+});
+
 export const reviewController = {
   createReview,
+  getRecentReviews,
 };

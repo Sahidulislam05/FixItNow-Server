@@ -7,6 +7,8 @@ import { reviewValidation } from "./review.validation";
 
 const router = Router();
 
+router.get("/recent", reviewController.getRecentReviews);
+
 router.post(
   "/",
   auth(Role.CUSTOMER),

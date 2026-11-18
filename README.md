@@ -92,7 +92,7 @@ fixitnow-backend/
 ├── prisma/
 │   ├── schema/                # Multi-file Prisma schema (8 entities + enums)
 │   ├── migrations/
-│   └── seed.ts                # Seeds admin user + default categories
+│   └── seed.ts                # Seeds categories, admin and demo accounts/bookings
 ├── src/
 │   ├── app.ts                 # Express app setup, route mounting
 │   ├── server.ts              # Local dev server bootstrap
@@ -164,14 +164,15 @@ Full request/response examples are in [`FixItNow.postman_collection.json`](./Fix
 | Module                  | Endpoints                                                                                                                                                     |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Auth**                | `POST /api/auth/login` · `POST /api/auth/refresh-token`                                                                                                       |
-| **User**                | `POST /api/users/register` · `GET /api/users/me` · `PUT /api/users/my-profile`                                                                                |
+| **User**                | `POST /api/users/register` · `GET /api/users/me` · `PUT /api/users/my-profile` · `PATCH /api/users/me/password`                                               |
 | **Category**            | `GET/POST /api/categories` · `GET/PATCH /api/categories/:id`                                                                                                  |
 | **Technician (public)** | `GET /api/technicians` · `GET /api/technicians/:id`                                                                                                           |
 | **Technician (self)**   | `PUT /api/technician/profile` · `PUT/GET /api/technician/availability`                                                                                        |
 | **Service**             | `POST/GET /api/services` · `GET /api/services/my-services` · `GET/PATCH/DELETE /api/services/:id`                                                             |
 | **Booking**             | `POST/GET /api/bookings` · `GET /api/bookings/:id` · `PATCH /api/bookings/:id/cancel` · `GET /api/technician/bookings` · `PATCH /api/technician/bookings/:id` |
 | **Payment**             | `POST /api/payments/create` · `POST /api/payments/confirm` · `GET /api/payments` · `GET /api/payments/:id`                                                    |
-| **Review**              | `POST /api/reviews`                                                                                                                                           |
+| **Review**              | `POST /api/reviews` · `GET /api/reviews/recent` (public)                                                                                                      |
+| **Contact**             | `POST /api/contact` (public) · `GET /api/contact` (admin)                                                                                                     |
 | **Admin**               | `GET /api/admin/users` · `PATCH /api/admin/users/:id` · `GET /api/admin/bookings` · `GET/POST /api/admin/categories`                                          |
 
 ---
@@ -198,7 +199,7 @@ cp .env.example .env
 ```bash
 npx prisma generate
 npx prisma migrate dev --name init
-npm run seed        # admin user + 8 default categories
+npm run seed        # categories, admin, demo customer/technician + bookings
 ```
 
 ### Run Locally
@@ -261,9 +262,24 @@ vercel --prod        # or push to a Git-connected Vercel project
 
 ---
 
-## 👤 Admin Credentials
+## 👤 Demo Accounts
 
-Seeded via `npm run seed` using `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env`. Login at `POST /api/auth/login` with these credentials to get an admin access token.
+`npm run seed` creates everything needed to walk through the full marketplace workflow. It is safe to run more than once.
+
+| Role       | Email                     | Password                                               |
+| ---------- | ------------------------- | ------------------------------------------------------ |
+| Customer   | `customer@fixitnow.com`   | `customer123` (override with `DEMO_CUSTOMER_PASSWORD`)   |
+| Technician | `technician@fixitnow.com` | `technician123` (override with `DEMO_TECHNICIAN_PASSWORD`) |
+| Admin      | `ADMIN_EMAIL`             | `ADMIN_PASSWORD`                                       |
+
+The demo technician gets a profile, weekly hours and three services. The demo customer gets one booking in **every** stage — requested, accepted, paid, in progress, completed (unreviewed) and completed (reviewed) — so each dashboard action can be tried immediately. Passwords of the accounts in `DEMO_LOCKED_EMAILS` cannot be changed through the API.
+
+After pulling these changes, apply the new `contact_messages` migration before seeding:
+
+```bash
+npx prisma migrate deploy
+npm run seed
+```
 
 ---
 
@@ -274,7 +290,7 @@ Seeded via `npm run seed` using `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env`. Lo
 | `npm run dev`   | Start local dev server with hot reload (`tsx watch`) |
 | `npm run build` | Compile TypeScript → `dist/`                         |
 | `npm start`     | Run the compiled build (`node dist/server.js`)       |
-| `npm run seed`  | Seed admin user + default categories                 |
+| `npm run seed`  | Seed categories, admin and the demo marketplace data |
 
 ---
 
